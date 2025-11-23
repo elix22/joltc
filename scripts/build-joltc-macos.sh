@@ -71,23 +71,28 @@ if [ ! -f "$LIB_PATH" ]; then
 fi
 
 if [ -f "$LIB_PATH" ]; then
-    # Strip existing signature, then re-sign to force binary changes
-    echo "Stripping and re-signing libjoltc.dylib..."
-    codesign --remove-signature "$LIB_PATH" 2>/dev/null || true
-    codesign --force --sign - "$LIB_PATH"
-    
+    # Copy to destination first
     cp "$LIB_PATH" "$DEST_DIR/libjoltc.dylib"
+    
+    # Strip and re-sign in destination to ensure unique signature
+    echo "Stripping and re-signing libjoltc.dylib..."
+    codesign --remove-signature "$DEST_DIR/libjoltc.dylib" 2>/dev/null || true
+    # Add timestamp to identifier to make each build unique
+    TIMESTAMP=$(date +%s)
+    codesign --force --sign - --identifier "libjoltc.${TIMESTAMP}" "$DEST_DIR/libjoltc.dylib"
     echo "Copied libjoltc.dylib"
     
     # Also copy libJolt.dylib dependency
     JOLT_LIB_PATH="$BUILD_DIR/lib/$BUILD_TYPE/libJolt.dylib"
     if [ -f "$JOLT_LIB_PATH" ]; then
-        # Strip existing signature, then re-sign to force binary changes
-        echo "Stripping and re-signing libJolt.dylib..."
-        codesign --remove-signature "$JOLT_LIB_PATH" 2>/dev/null || true
-        codesign --force --sign - "$JOLT_LIB_PATH"
-        
+        # Copy to destination first
         cp "$JOLT_LIB_PATH" "$DEST_DIR/libJolt.dylib"
+        
+        # Strip and re-sign in destination to ensure unique signature
+        echo "Stripping and re-signing libJolt.dylib..."
+        codesign --remove-signature "$DEST_DIR/libJolt.dylib" 2>/dev/null || true
+        # Add timestamp to identifier to make each build unique
+        codesign --force --sign - --identifier "libJolt.${TIMESTAMP}" "$DEST_DIR/libJolt.dylib"
         echo "Copied libJolt.dylib"
     else
         echo "Warning: libJolt.dylib not found at $JOLT_LIB_PATH"
