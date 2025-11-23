@@ -26,25 +26,41 @@ echo "=========================================="
 EMSDK_PATH="$SOKOL_CHARP_ROOT/tools/emsdk/emsdk"
 
 # Check if local emsdk exists
-if [ ! -f "$EMSDK_PATH" ]; then
-    echo "Error: Local emsdk not found at $EMSDK_PATH"
-    echo "Please ensure the submodule is initialized: git submodule update --init --recursive"
-    exit 1
+if [ -f "$EMSDK_PATH" ]; then
+    echo "Using local emsdk from Sokol.NET..."
+    
+    # Make emsdk executable if it isn't already
+    chmod +x "$EMSDK_PATH"
+    
+    # Activate Emscripten SDK with the specified version
+    echo "Installing Emscripten SDK version $EMSCRIPTEN_VERSION..."
+    "$EMSDK_PATH" install "$EMSCRIPTEN_VERSION"
+    
+    echo "Activating Emscripten SDK version $EMSCRIPTEN_VERSION..."
+    "$EMSDK_PATH" activate "$EMSCRIPTEN_VERSION"
+    
+    # Set up environment variables for Emscripten
+    echo "Setting up Emscripten environment..."
+    source "$SOKOL_CHARP_ROOT/tools/emsdk/emsdk_env.sh"
+else
+    echo "Local emsdk not found, using system emscripten (assuming CI environment)..."
+    
+    # Check if emcc is available
+    if ! command -v emcc &> /dev/null; then
+        echo "Error: emcc not found in PATH"
+        echo "Please install Emscripten or run from Sokol.NET with emsdk submodule initialized"
+        exit 1
+    fi
+    
+    # Verify emscripten version
+    EMCC_VERSION=$(emcc --version | head -n 1 | grep -oP '\d+\.\d+\.\d+' || echo "unknown")
+    echo "Found Emscripten version: $EMCC_VERSION"
+    
+    if [ "$EMCC_VERSION" != "$EMSCRIPTEN_VERSION" ]; then
+        echo "Warning: Emscripten version mismatch (expected $EMSCRIPTEN_VERSION, found $EMCC_VERSION)"
+        echo "Continuing anyway..."
+    fi
 fi
-
-# Make emsdk executable if it isn't already
-chmod +x "$EMSDK_PATH"
-
-# Activate Emscripten SDK with the specified version
-echo "Installing Emscripten SDK version $EMSCRIPTEN_VERSION..."
-"$EMSDK_PATH" install "$EMSCRIPTEN_VERSION"
-
-echo "Activating Emscripten SDK version $EMSCRIPTEN_VERSION..."
-"$EMSDK_PATH" activate "$EMSCRIPTEN_VERSION"
-
-# Set up environment variables for Emscripten
-echo "Setting up Emscripten environment..."
-source "$SOKOL_CHARP_ROOT/tools/emsdk/emsdk_env.sh"
 
 echo "Using Emscripten: $(emcc --version | head -n 1)"
 
