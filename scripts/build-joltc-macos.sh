@@ -76,6 +76,8 @@ if [ -f "$LIB_PATH" ]; then
     codesign --force --sign - "$LIB_PATH"
     
     cp "$LIB_PATH" "$DEST_DIR/libjoltc.dylib"
+    # Update timestamp to ensure git detects changes
+    touch "$DEST_DIR/libjoltc.dylib"
     echo "Copied libjoltc.dylib"
     
     # Also copy libJolt.dylib dependency
@@ -86,6 +88,8 @@ if [ -f "$LIB_PATH" ]; then
         codesign --force --sign - "$JOLT_LIB_PATH"
         
         cp "$JOLT_LIB_PATH" "$DEST_DIR/libJolt.dylib"
+        # Update timestamp to ensure git detects changes
+        touch "$DEST_DIR/libJolt.dylib"
         echo "Copied libJolt.dylib"
     else
         echo "Warning: libJolt.dylib not found at $JOLT_LIB_PATH"
