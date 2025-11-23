@@ -71,25 +71,23 @@ if [ ! -f "$LIB_PATH" ]; then
 fi
 
 if [ -f "$LIB_PATH" ]; then
-    # Code sign libjoltc.dylib (required for macOS to load CI-built libraries)
-    echo "Code signing libjoltc.dylib..."
+    # Strip existing signature, then re-sign to force binary changes
+    echo "Stripping and re-signing libjoltc.dylib..."
+    codesign --remove-signature "$LIB_PATH" 2>/dev/null || true
     codesign --force --sign - "$LIB_PATH"
     
     cp "$LIB_PATH" "$DEST_DIR/libjoltc.dylib"
-    # Update timestamp to ensure git detects changes
-    touch "$DEST_DIR/libjoltc.dylib"
     echo "Copied libjoltc.dylib"
     
     # Also copy libJolt.dylib dependency
     JOLT_LIB_PATH="$BUILD_DIR/lib/$BUILD_TYPE/libJolt.dylib"
     if [ -f "$JOLT_LIB_PATH" ]; then
-        # Code sign libJolt.dylib
-        echo "Code signing libJolt.dylib..."
+        # Strip existing signature, then re-sign to force binary changes
+        echo "Stripping and re-signing libJolt.dylib..."
+        codesign --remove-signature "$JOLT_LIB_PATH" 2>/dev/null || true
         codesign --force --sign - "$JOLT_LIB_PATH"
         
         cp "$JOLT_LIB_PATH" "$DEST_DIR/libJolt.dylib"
-        # Update timestamp to ensure git detects changes
-        touch "$DEST_DIR/libJolt.dylib"
         echo "Copied libJolt.dylib"
     else
         echo "Warning: libJolt.dylib not found at $JOLT_LIB_PATH"
