@@ -282,8 +282,10 @@ jobs:
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
         
-        # Remove old libraries and copy new ones
-        rm -rf libs/
+        # Remove libs from git tracking and filesystem
+        git rm -rf libs/ || true
+        
+        # Copy new libraries
         mkdir -p libs
         cp -r combined-libs/* libs/
         
