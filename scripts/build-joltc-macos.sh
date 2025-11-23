@@ -74,29 +74,32 @@ if [ -f "$LIB_PATH" ]; then
     # Copy to destination first
     cp "$LIB_PATH" "$DEST_DIR/libjoltc.dylib"
     
-    # Strip and re-sign in destination to ensure unique signature
-    echo "Stripping and re-signing libjoltc.dylib..."
-    codesign --remove-signature "$DEST_DIR/libjoltc.dylib" 2>/dev/null || true
-    # Add timestamp to identifier to make each build unique
-    TIMESTAMP=$(date +%s)
-    codesign --force --sign - --identifier "libjoltc.${TIMESTAMP}" "$DEST_DIR/libjoltc.dylib"
-    echo "Copied libjoltc.dylib"
-    
     # Also copy libJolt.dylib dependency
     JOLT_LIB_PATH="$BUILD_DIR/lib/$BUILD_TYPE/libJolt.dylib"
     if [ -f "$JOLT_LIB_PATH" ]; then
-        # Copy to destination first
         cp "$JOLT_LIB_PATH" "$DEST_DIR/libJolt.dylib"
-        
-        # Strip and re-sign in destination to ensure unique signature
-        echo "Stripping and re-signing libJolt.dylib..."
-        codesign --remove-signature "$DEST_DIR/libJolt.dylib" 2>/dev/null || true
-        # Add timestamp to identifier to make each build unique
-        codesign --force --sign - --identifier "libJolt.${TIMESTAMP}" "$DEST_DIR/libJolt.dylib"
-        echo "Copied libJolt.dylib"
     else
         echo "Warning: libJolt.dylib not found at $JOLT_LIB_PATH"
+        exit 1
     fi
+    
+    # Fix install names to use @loader_path for proper loading
+    echo "Fixing install names..."
+    install_name_tool -id "@loader_path/libJolt.dylib" "$DEST_DIR/libJolt.dylib"
+    install_name_tool -id "@loader_path/libjoltc.dylib" "$DEST_DIR/libjoltc.dylib"
+    install_name_tool -change "@rpath/libJolt.dylib" "@loader_path/libJolt.dylib" "$DEST_DIR/libjoltc.dylib"
+    
+    # Strip and re-sign in destination to ensure unique signature
+    echo "Stripping and re-signing libraries..."
+    codesign --remove-signature "$DEST_DIR/libjoltc.dylib" 2>/dev/null || true
+    codesign --remove-signature "$DEST_DIR/libJolt.dylib" 2>/dev/null || true
+    
+    # Add timestamp to identifier to make each build unique
+    TIMESTAMP=$(date +%s)
+    codesign --force --sign - --identifier "libjoltc.${TIMESTAMP}" "$DEST_DIR/libjoltc.dylib"
+    codesign --force --sign - --identifier "libJolt.${TIMESTAMP}" "$DEST_DIR/libJolt.dylib"
+    
+    echo "Copied and signed libjoltc.dylib and libJolt.dylib"
 else
     echo "Error: libjoltc.dylib not found"
     echo "Searched paths:"
