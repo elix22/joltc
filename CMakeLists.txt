@@ -140,6 +140,26 @@ if (JPH_MASTER_PROJECT AND NOT CMAKE_BUILD_TYPE)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${CMAKE_CONFIGURATION_TYPES})
 endif ()
 
+# Configure shared library settings BEFORE fetching JoltPhysics
+if (IOS)
+    # Allow override via command line for iOS framework builds
+    if (NOT DEFINED JPH_BUILD_SHARED)
+        set(JPH_BUILD_SHARED OFF CACHE BOOL "Disable shared library on iOS by default")
+    endif()
+    # For iOS, allow Jolt to be built as shared if JPH_BUILD_SHARED is ON
+    if (JPH_BUILD_SHARED)
+        set(BUILD_SHARED_LIBS ON CACHE BOOL "Build Jolt as shared library for iOS frameworks" FORCE)
+    else()
+        set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build Jolt as static library" FORCE)
+    endif()
+elseif (EMSCRIPTEN)
+    # For WebAssembly, always use static libraries
+    set(JPH_BUILD_SHARED OFF CACHE BOOL "Always disable shared library for WASM" FORCE)
+    set(BUILD_SHARED_LIBS OFF CACHE BOOL "Always disable shared library for WASM" FORCE)
+else()
+    set(BUILD_SHARED_LIBS OFF CACHE BOOL "Disable shared library when building Jolt" FORCE)
+endif()
+
 # Search for local JoltPhysics first
 if(EXISTS "${CMAKE_SOURCE_DIR}/JoltPhysics/Build/CMakeLists.txt")
     message(STATUS "Using local JoltPhysics from ${CMAKE_SOURCE_DIR}/JoltPhysics")
@@ -291,12 +311,9 @@ set(CMAKE_SHARED_LINKER_FLAGS_DISTRIBUTION "${CMAKE_SHARED_LINKER_FLAGS_RELEASE}
 SET_INTERPROCEDURAL_OPTIMIZATION()
 
 set(PHYSICS_REPO_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/src/joltc)
-set(BUILD_SHARED_LIBS OFF CACHE BOOL "Disable shared library when building Jolt" FORCE)
 
-# Options
-if (IOS OR EMSCRIPTEN)
-    set(JPH_BUILD_SHARED OFF CACHE BOOL "Always Disable shared library on (IOS, WEB)" FORCE)
-else()
+# Options (JPH_BUILD_SHARED was already configured above before fetching JoltPhysics)
+if (NOT IOS AND NOT EMSCRIPTEN)
 	option(JPH_BUILD_SHARED "Build a shared library" ${JPH_MASTER_PROJECT})
 endif()
 
