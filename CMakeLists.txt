@@ -157,7 +157,10 @@ elseif (EMSCRIPTEN)
     set(JPH_BUILD_SHARED OFF CACHE BOOL "Always disable shared library for WASM" FORCE)
     set(BUILD_SHARED_LIBS OFF CACHE BOOL "Always disable shared library for WASM" FORCE)
 else()
-    set(BUILD_SHARED_LIBS OFF CACHE BOOL "Disable shared library when building Jolt" FORCE)
+    # For other platforms (macOS, Windows, Linux), allow override from command line
+    if (NOT DEFINED BUILD_SHARED_LIBS)
+        set(BUILD_SHARED_LIBS OFF CACHE BOOL "Disable shared library when building Jolt by default")
+    endif()
 endif()
 
 # Search for local JoltPhysics first
