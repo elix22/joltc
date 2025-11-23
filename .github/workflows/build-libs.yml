@@ -299,15 +299,8 @@ jobs:
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
         git diff --cached --stat
         
-        # Check if there are any changes to commit
-        if git diff --cached --quiet; then
-          echo ""
-          echo "⚠️  No changes to joltc libraries detected"
-          exit 0
-        fi
-        
         echo ""
-        echo "✓ Changes detected, preparing commit..."
+        echo "✓ Preparing to commit libraries (force commit to ensure all platforms are updated)..."
         echo ""
         
         # Create commit message with details
@@ -318,12 +311,16 @@ jobs:
         echo "" >> commit_msg.txt
         echo "Updated libraries:" >> commit_msg.txt
         
-        # List what was updated
-        git diff --cached --name-only | while read file; do
-          echo "  - $file" >> commit_msg.txt
-        done
+        # List what was updated (or mark all platforms if no git changes detected)
+        if git diff --cached --quiet; then
+          echo "  - All platforms (forced update)" >> commit_msg.txt
+        else
+          git diff --cached --name-only | while read file; do
+            echo "  - $file" >> commit_msg.txt
+          done
+        fi
         
-        git commit -F commit_msg.txt
+        git commit --allow-empty -F commit_msg.txt
         
         echo ""
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
