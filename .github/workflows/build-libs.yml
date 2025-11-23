@@ -63,7 +63,7 @@ jobs:
       run: |
         cd scripts
         chmod +x build-joltc-macos.sh
-        ./build-joltc-macos.sh
+        ./build-joltc-macos.sh ${{ matrix.arch }}
     
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
