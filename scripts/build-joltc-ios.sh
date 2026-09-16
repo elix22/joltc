@@ -40,7 +40,7 @@ cmake .. \
     -DCMAKE_SYSTEM_NAME=iOS \
     -DCMAKE_OSX_SYSROOT=iphoneos \
     -DCMAKE_OSX_ARCHITECTURES="arm64" \
-    -DCMAKE_OSX_DEPLOYMENT_TARGET=13.0 \
+    -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0 \
     -DCMAKE_BUILD_TYPE=Release \
     -DJPH_BUILD_SHARED=ON \
     -DTARGET_UNIT_TESTS=OFF \
@@ -139,7 +139,7 @@ cat > "$JOLTC_FRAMEWORK_PATH/Info.plist" << 'EOF'
     <key>CFBundleVersion</key>
     <string>1</string>
     <key>MinimumOSVersion</key>
-    <string>13.0</string>
+    <string>15.0</string>
 </dict>
 </plist>
 EOF
@@ -167,7 +167,7 @@ cat > "$JOLT_FRAMEWORK_PATH/Info.plist" << 'EOF'
     <key>CFBundleVersion</key>
     <string>1</string>
     <key>MinimumOSVersion</key>
-    <string>13.0</string>
+    <string>15.0</string>
 </dict>
 </plist>
 EOF
