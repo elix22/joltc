@@ -2,12 +2,12 @@ name: Build JoltC Libraries
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, develop, sokol-dev ]
     paths-ignore:
       - '*.md'
       - 'docs/**'
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main, develop, sokol-dev ]
     paths-ignore:
       - '*.md'
       - 'docs/**'
@@ -274,7 +274,7 @@ jobs:
         retention-days: 90
     
     - name: Commit libraries to repository
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/sokol-dev') && github.event_name == 'push'
       run: |
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
         echo "📝 Preparing to commit libraries..."
@@ -330,7 +330,7 @@ jobs:
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
         echo "⬆️  Pushing changes to repository..."
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        git push origin main
+        git push origin ${{ github.ref_name }}
         
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
         echo "✅ JoltC libraries committed and pushed successfully"
